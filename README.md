@@ -1,0 +1,1 @@
+# gsp-r10-adapter
