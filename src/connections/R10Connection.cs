@@ -97,13 +97,13 @@ namespace gspro_r10
           break;
         case R10MessageType.SendShot:
           ConnectionManager.SendShot(this, BallData, ClubData);
-          ClubData = null;
-          BallData = null;
+          response = new SuccessResponse(R10MessageType.SendShot);
           break;
         case R10MessageType.Disconnect:
           Disconnect();
           break;
         default:
+          response = new SuccessResponse(m.Type);
           break;
       };
 
@@ -116,13 +116,29 @@ namespace gspro_r10
 
     public void CompleteShot()
     {
+      SendAsync(JsonSerializer.Serialize(new DisrmMessage()));
+      Thread.Sleep(500);
       SendAsync(JsonSerializer.Serialize(new ShotCompleteMessage()
       {
-        Details = ShotCompleteDetails.Empty()
+        Details = new ShotCompleteDetails()
+        {
+          BallData = this.BallData,
+          ClubData = this.ClubData,
+          Apex = 0,
+          DistanceToPin = 0,
+          CarryDeviationAngle = 0,
+          CarryDeviationFeet = 0,
+          CarryDistance = 0,
+          TotalDeviationAngle = 0,
+          TotalDeviationFeet = 0,
+          TotalDistance = 0,
+          BallInHole = false,
+          BallLocation = "Fairway"
+        }
       }));
-      Thread.Sleep(100);
-      SendAsync(JsonSerializer.Serialize(new DisrmMessage()));
-      Thread.Sleep(100);
+      ClubData = null;
+      BallData = null;
+      Thread.Sleep(500);
       SendAsync(JsonSerializer.Serialize(new ArmMessage()));
     }
 
@@ -145,6 +161,10 @@ namespace gspro_r10
     public override bool Start()
     {
       SimpleLogger.LogR10Info($"Server starting at IP: {GetLocalIPAddress()} Port: {Port}...");
+      this.OptionKeepAlive = true;
+      this.OptionTcpKeepAliveRetryCount = 3;
+      this.OptionTcpKeepAliveInterval = 60;
+      this.OptionTcpKeepAliveTime = 60;
       return base.Start();
     }
 
@@ -161,7 +181,6 @@ namespace gspro_r10
 
     protected override void OnError(SocketError error)
     {
-      
       SimpleLogger.LogR10Error($"TCP server caught an error with code {error}");
     }
 

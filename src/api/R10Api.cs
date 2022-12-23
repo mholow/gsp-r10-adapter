@@ -45,6 +45,8 @@ namespace gspro_r10.R10
     public double SpinAxis { get; set; }
     public double LaunchDirection { get; set; }
     public double BallSpeed { get; set; }
+    public double? BackSpin { get; set; }
+    public double? SideSpin { get; set; }
   }
 
   public class SetClubDataMessage : R10Message
@@ -91,6 +93,8 @@ namespace gspro_r10.R10
         Details = details;
       }
   }
+
+  
 
   public class ShotCompleteDetails
   {
