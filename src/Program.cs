@@ -10,9 +10,9 @@ namespace gspro_r10
       IConfigurationBuilder builder = new ConfigurationBuilder()
         .SetBasePath(Directory.GetCurrentDirectory());
 
-      if (File.Exists(Path.Join(Directory.GetCurrentDirectory(), "appsettings.json")))
+      if (File.Exists(Path.Join(Directory.GetCurrentDirectory(), "settings.json")))
       {
-        builder.AddJsonFile("appsettings.json");
+        builder.AddJsonFile("settings.json");
       }
 
       IConfigurationRoot configuration = builder.Build();
