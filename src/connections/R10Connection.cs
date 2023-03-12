@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using gspro_r10.R10;
+using Microsoft.Extensions.Configuration;
 using NetCoreServer;
 
 namespace gspro_r10
@@ -25,7 +26,7 @@ namespace gspro_r10
 
     protected override void OnConnected()
     {
-      SimpleLogger.LogR10Info($"TCP session with Id {Id} connected!");
+      R10Logger.LogR10Info($"TCP session with Id {Id} connected!");
       PingTimer = new Timer(SendPing, null, 0, 10000);
     }
 
@@ -45,22 +46,20 @@ namespace gspro_r10
 
     public override bool SendAsync(string message)
     {
-      SimpleLogger.LogR10Outgoing(message);
+      R10Logger.LogR10Outgoing(message);
       return base.SendAsync(message);
     }
 
-
-
     protected override void OnDisconnected()
     {
-      SimpleLogger.LogR10Info($"TCP session with Id {Id} disconnected!");
+      R10Logger.LogR10Info($"TCP session with Id {Id} disconnected!");
       PingTimer?.Dispose();
     }
 
     protected override void OnReceived(byte[] buffer, long offset, long size)
     {
       string message = Encoding.UTF8.GetString(buffer, (int)offset, (int)size);
-      SimpleLogger.LogR10Incoming(message);
+      R10Logger.LogR10Incoming(message);
 
       R10Message m;
       try
@@ -96,7 +95,8 @@ namespace gspro_r10
           response = new SuccessResponse(R10MessageType.SetClubData);
           break;
         case R10MessageType.SendShot:
-          ConnectionManager.SendShot(this, BallData, ClubData);
+          ConnectionManager.SendShot(BallDataFromR10BallData(BallData), ClubDataFromR10ClubData(ClubData));
+          CompleteShot();
           response = new SuccessResponse(R10MessageType.SendShot);
           break;
         case R10MessageType.Disconnect:
@@ -144,23 +144,49 @@ namespace gspro_r10
 
     protected override void OnError(SocketError error)
     {
-      SimpleLogger.LogR10Error($"TCP session caught an error with code {error}");
+      R10Logger.LogR10Error($"TCP session caught an error with code {error}");
     }
 
+    public static OpenConnect.BallData? BallDataFromR10BallData(R10.BallData? r10BallData)
+    {
+      if (r10BallData == null) return null;
+      return new OpenConnect.BallData()
+      {
+        Speed = r10BallData.BallSpeed,
+        SpinAxis = -1 * (r10BallData.SpinAxis < 90 ? r10BallData.SpinAxis : r10BallData.SpinAxis - 360),
+        TotalSpin = r10BallData.TotalSpin,
+        HLA = r10BallData.LaunchDirection,
+        VLA = r10BallData.LaunchAngle,
+        SideSpin = r10BallData.TotalSpin * -1 * Math.Sin(r10BallData.SpinAxis * Math.PI / 180),
+        BackSpin = r10BallData.TotalSpin * Math.Cos(r10BallData.SpinAxis * Math.PI / 180)
+      };
+    }
 
+    public static OpenConnect.ClubData? ClubDataFromR10ClubData(R10.ClubData? r10ClubData)
+    {
+      if (r10ClubData == null) return null;
+      return new OpenConnect.ClubData()
+      {
+        Speed = r10ClubData.ClubHeadSpeed,
+        SpeedAtImpact = r10ClubData.ClubHeadSpeed,
+        Path = r10ClubData.ClubAnglePath,
+        FaceToTarget = r10ClubData.ClubAngleFace
+      };
+    }
   }
 
   class R10ConnectionServer : TcpServer
   {
     ConnectionManager ConnectionManager;
-    public R10ConnectionServer(ConnectionManager connectionManager, int port) : base(IPAddress.Any, port)
+    public R10ConnectionServer(ConnectionManager connectionManager, IConfigurationSection configuration)
+      : base(IPAddress.Any, int.Parse(configuration["port"] ?? "2483"))
     {
       ConnectionManager = connectionManager;
     }
 
     public override bool Start()
     {
-      SimpleLogger.LogR10Info($"Server starting at IP: {GetLocalIPAddress()} Port: {Port}...");
+      R10Logger.LogR10Info($"Server starting at IP: {GetLocalIPAddress()} Port: {Port}...");
       this.OptionKeepAlive = true;
       this.OptionTcpKeepAliveRetryCount = 3;
       this.OptionTcpKeepAliveInterval = 60;
@@ -181,7 +207,7 @@ namespace gspro_r10
 
     protected override void OnError(SocketError error)
     {
-      SimpleLogger.LogR10Error($"TCP server caught an error with code {error}");
+      R10Logger.LogR10Error($"TCP server caught an error with code {error}");
     }
 
     public static string GetLocalIPAddress()
@@ -196,5 +222,15 @@ namespace gspro_r10
       }
       throw new Exception("No network adapters with an IPv4 address in the system!");
     }
+
+  }
+
+  public static class R10Logger
+  {
+    public static void LogR10Info(string message) => LogR10Message(message, LogMessageType.Informational);
+    public static void LogR10Error(string message) => LogR10Message(message, LogMessageType.Error);
+    public static void LogR10Outgoing(string message) => LogR10Message(message, LogMessageType.Outgoing);
+    public static void LogR10Incoming(string message) => LogR10Message(message, LogMessageType.Incoming);
+    public static void LogR10Message(string message, LogMessageType type) => BaseLogger.LogMessage(message, "R10-E6", type, ConsoleColor.Blue);
   }
 }

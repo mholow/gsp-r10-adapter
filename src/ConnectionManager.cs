@@ -9,36 +9,47 @@ namespace gspro_r10
 {
   public class ConnectionManager
   {
-    private R10ConnectionServer R10Server;
+    private R10ConnectionServer? R10Server;
     private OpenConnectClient OpenConnectClient;
+    private BluetoothConnection? BluetoothConnection { get; }
 
-    private JsonSerializerOptions serializerSettings = new JsonSerializerOptions() {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    private JsonSerializerOptions serializerSettings = new JsonSerializerOptions()
+    {
+      DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     private int shotNumber = 0;
+
     public ConnectionManager(IConfigurationRoot configuration)
     {
+      if (bool.Parse(configuration.GetSection("r10E6Server")["enabled"] ?? "false"))
+      {
+        R10Server = new R10ConnectionServer(this, configuration.GetSection("r10E6Server"));
+        R10Server.Start();
+      }
 
-      R10Server = new R10ConnectionServer(this, int.Parse(configuration["r10ServerPort"] ?? "2483"));
-      R10Server.Start();
-      OpenConnectClient = new OpenConnectClient(configuration["openConnectIP"] ?? "127.0.0.1", int.Parse(configuration["openConnectPort"] ?? "921"));
+      OpenConnectClient = new OpenConnectClient(this, configuration.GetSection("openConnect"));
       OpenConnectClient.ConnectAsync();
+
+      if (bool.Parse(configuration.GetSection("bluetooth")["enabled"] ?? "false"))
+        BluetoothConnection = new BluetoothConnection(this, configuration.GetSection("bluetooth"));
     }
 
 
-    internal void SendShot(R10Session session, R10.BallData? ballData, R10.ClubData? clubData)
+    internal void SendShot(OpenConnect.BallData? ballData, OpenConnect.ClubData? clubData)
     {
       string openConnectMessage = JsonSerializer.Serialize(OpenConnectApiMessage.CreateShotData(
         shotNumber++,
-        OpenConnect.BallData.FromR10BallData(ballData),
-        OpenConnect.ClubData.FromR10ClubData(clubData)
+        ballData,
+        clubData
       ), serializerSettings);
 
       OpenConnectClient.SendAsync(openConnectMessage);
+    }
 
-      session.CompleteShot();
-
+    internal void SendLaunchMonitorReadyUpdate(bool deviceReady)
+    {
+      OpenConnectClient.SetDeviceReady(deviceReady);
     }
   }
 }

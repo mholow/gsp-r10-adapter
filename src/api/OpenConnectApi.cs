@@ -86,21 +86,6 @@ namespace gspro_r10.OpenConnect
     public double VLA { get; set; }
     public double CarryDistance { get; set; }
 
-    public static BallData? FromR10BallData(gspro_r10.R10.BallData? r10BallData)
-    {
-      if (r10BallData == null) return null;
-      return new BallData()
-      {
-        Speed = r10BallData.BallSpeed,
-        SpinAxis = -1 * (r10BallData.SpinAxis < 90 ? r10BallData.SpinAxis: r10BallData.SpinAxis - 360),
-        TotalSpin = r10BallData.TotalSpin,
-        HLA = r10BallData.LaunchDirection,
-        VLA = r10BallData.LaunchAngle,
-        SideSpin = r10BallData.TotalSpin * -1 * Math.Sin(r10BallData.SpinAxis * Math.PI/180),
-        BackSpin = r10BallData.TotalSpin * Math.Cos(r10BallData.SpinAxis * Math.PI/180)
-      };
-
-    }
   }
 
   public class ClubData
@@ -116,17 +101,6 @@ namespace gspro_r10.OpenConnect
     public double HorizontalFaceImpact { get; set; }
     public double ClosureRate { get; set; }
 
-    public static ClubData? FromR10ClubData(R10.ClubData? r10ClubData)
-    {
-      if (r10ClubData == null) return null;
-      return new ClubData()
-      {
-        Speed = r10ClubData.ClubHeadSpeed,
-        SpeedAtImpact = r10ClubData.ClubHeadSpeed,
-        Path = r10ClubData.ClubAnglePath,
-        FaceToTarget = r10ClubData.ClubAngleFace
-      };
-    }
   }
 
 }
