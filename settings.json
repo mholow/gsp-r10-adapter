@@ -9,6 +9,7 @@
   },
   "bluetooth": {
     "enabled": true,
+    "bluetoothDeviceName": "Approach R10",
     "reconnectInterval": 10, // seconds
     "sendStatusChangesToGSP": false, // send device readiness updates to gsp (does nothing as of today)
     "autoWake": true, // wake device if falls asleep

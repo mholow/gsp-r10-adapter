@@ -8,7 +8,6 @@ namespace gspro_r10
 {
   public class BluetoothConnection
   {
-    private static string DEVICE_NAME = "Approach R10";
     private static readonly double METERS_PER_S_TO_MILES_PER_HOUR = 2.2369;
     private static readonly float FEET_TO_METERS = 1 / 3.281f;
     public ConnectionManager ConnectionManager { get; }
@@ -27,11 +26,13 @@ namespace gspro_r10
 
     private void ConnectToDevice()
     {
-      Device = FindDevice();
+      string deviceName = Configuration["bluetoothDeviceName"] ?? "Approach R10";
+      Device = FindDevice(deviceName);
       if (Device == null)
       {
-        BluetoothLogger.Error("Could not find launch monitor in list of paired devices.");
+        BluetoothLogger.Error($"Could not find '{deviceName}' in list of paired devices.");
         BluetoothLogger.Error("Device must be paired through computer bluetooth settings before running");
+        BluetoothLogger.Error("If device is paired, make sure name matches exactly what is set in 'bluetoothDeviceName' in settings.json");
         return;
       }
 
@@ -118,10 +119,10 @@ namespace gspro_r10
       return lm;
     }
 
-    private BluetoothDevice? FindDevice()
+    private BluetoothDevice? FindDevice(string deviceName)
     {
       foreach (BluetoothDevice pairedDev in Bluetooth.GetPairedDevicesAsync().Result)
-        if (pairedDev.Name == DEVICE_NAME)
+        if (pairedDev.Name == deviceName)
           return pairedDev;
       return null;
     }
