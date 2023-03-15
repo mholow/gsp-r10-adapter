@@ -12,6 +12,7 @@ namespace gspro_r10
     private R10ConnectionServer? R10Server;
     private OpenConnectClient OpenConnectClient;
     private BluetoothConnection? BluetoothConnection { get; }
+    private PuttingConnectionServer? PuttingServer { get; }
 
     private JsonSerializerOptions serializerSettings = new JsonSerializerOptions()
     {
@@ -33,6 +34,11 @@ namespace gspro_r10
 
       if (bool.Parse(configuration.GetSection("bluetooth")["enabled"] ?? "false"))
         BluetoothConnection = new BluetoothConnection(this, configuration.GetSection("bluetooth"));
+
+      if (bool.Parse(configuration.GetSection("putting")["enabled"] ?? "false"))
+      {
+        PuttingServer = new PuttingConnectionServer(this, configuration.GetSection("putting"));
+      }
     }
 
 

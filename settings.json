@@ -20,5 +20,9 @@
     "temperature": 60, // fahrenheit 
     "airDensity": 1.225, // kg/m^3
     "teeDistanceInFeet": 7 // distance from R10 to ball in feet
+  },
+  "putting": {
+    "enabled": true,
+    "port": 8888
   }
 }
