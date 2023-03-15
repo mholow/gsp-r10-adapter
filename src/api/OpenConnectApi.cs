@@ -1,5 +1,7 @@
 namespace gspro_r10.OpenConnect
 {
+  using System.Text.Json.Serialization;
+
   public class OpenConnectApiMessage
   {
     public string DeviceID { get { return "GSPRO-R10"; } }
@@ -101,6 +103,46 @@ namespace gspro_r10.OpenConnect
     public double HorizontalFaceImpact { get; set; }
     public double ClosureRate { get; set; }
 
+  }
+
+  [JsonConverter(typeof(JsonStringEnumConverter))]
+  public enum Handed
+  {
+    RH,
+    LH
+  }
+
+  [JsonConverter(typeof(JsonStringEnumConverter))]
+  public enum Club
+
+  {
+    Unknown,
+    DR,
+    W2, W3, W4, W5, W6, W7,
+    I1, I2, I3, I4, I5, I6, I7, I8, I9,
+    H2, H3, H4, H5, H6, H7,
+    PW, GW, SW, LW,
+    PT
+  }
+
+  public enum Code
+  {
+    PlayerInfo = 201,
+    Ready = 202,
+    EndRound = 203
+  }
+
+  public class OpenConnectInfoMessage
+  {
+    public Code Code { get; set; }
+    public string Message { get; set; }
+  }
+
+  public class PlayerInformation : OpenConnectInfoMessage
+  {
+    public Handed Handed { get; set; }
+    public Club Club { get; set; }
+    public double DistanceToTarget { get; set; }
   }
 
 }

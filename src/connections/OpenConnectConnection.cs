@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using gspro_r10.OpenConnect;
 using Microsoft.Extensions.Configuration;
 using TcpClient = NetCoreServer.TcpClient;
 
@@ -14,10 +15,12 @@ namespace gspro_r10
     public bool InitiallyConnected { get; private set; }
     private bool _stop;
 
+    private ConnectionManager _connectionManager;
+
     public OpenConnectClient(ConnectionManager connectionManager, IConfigurationSection configuration)
       : base(configuration["ip"] ?? "127.0.0.1", int.Parse(configuration["port"] ?? "921"))
     {
-
+      _connectionManager = connectionManager;
     }
 
     public void DisconnectAndStop()
@@ -71,6 +74,26 @@ namespace gspro_r10
     {
       string received = Encoding.UTF8.GetString(buffer, (int)offset, (int)size);
       OpenConnectLogger.LogGSPIncoming(received);
+
+      OpenConnectInfoMessage m;
+      try
+      {
+        m = JsonSerializer.Deserialize<OpenConnectInfoMessage>(received) ?? new OpenConnectInfoMessage();
+      }
+      catch (JsonException)
+      {
+        m = new OpenConnectInfoMessage();
+      }
+
+      switch (m.Code)
+      {
+        case Code.PlayerInfo:
+          PlayerInformation info = JsonSerializer.Deserialize<PlayerInformation>(received) ?? new PlayerInformation();
+          OpenConnectLogger.LogGSPInfo($"New Club {info.Club} Selected.");
+          _connectionManager.ClubChanged(info.Club);
+          break;
+      };
+
     }
 
     protected override void OnError(SocketError error)

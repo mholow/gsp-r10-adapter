@@ -20,6 +20,7 @@ namespace gspro_r10
     };
 
     private int shotNumber = 0;
+    private Club previousClub = Club.Unknown;
 
     public ConnectionManager(IConfigurationRoot configuration)
     {
@@ -56,6 +57,23 @@ namespace gspro_r10
     internal void SendLaunchMonitorReadyUpdate(bool deviceReady)
     {
       OpenConnectClient.SetDeviceReady(deviceReady);
+    }
+
+    internal void ClubChanged(Club newClub)
+    {
+      if (previousClub != newClub)
+      {
+        if (previousClub == Club.PT && newClub != Club.PT)
+        {
+          if(PuttingServer != null)
+            PuttingServer.Stop();
+        } else if (newClub == Club.PT)
+        {
+          if(PuttingServer != null)
+            PuttingServer.Start();
+        }
+        previousClub = newClub;
+      }
     }
   }
 }
