@@ -119,6 +119,11 @@ namespace gspro_r10
       BallColor = Configuration["ballColor"] ?? "white";
       CamPreviewWidth = int.Parse(Configuration["camPreviewWidth"] ?? "640");
 
+      if (LaunchBallTracker)
+      {
+        CheckBallTrackingExists();
+      }
+
       if (LaunchBallTracker && !OnlyLaunchWhenPutting)
       {
         LaunchProcess();
@@ -162,9 +167,20 @@ namespace gspro_r10
 
     }
 
+    private bool CheckBallTrackingExists()
+    {
+        if (!(Directory.Exists("./ball_tracking") && File.Exists("ball_tracking/ball_tracking.exe")))
+        {
+          PuttingLogger.LogPuttError("ball_tracking folder not found.");
+          PuttingLogger.LogPuttError("Download latest release of ball_tracking program from https://github.com/alleexx/cam-putting-py/releases and unzip to same folder as this program");
+          return false;
+        }
+        return true;
+    }
+
     private void LaunchProcess()
     {
-        if (Directory.Exists("./ball_tracking") && File.Exists("ball_tracking/ball_tracking.exe"))
+        if (CheckBallTrackingExists())
         {
           PuttingLogger.LogPuttInfo("Starting putting camera");
 
@@ -194,11 +210,6 @@ namespace gspro_r10
             Thread.Sleep(4000);
           }
           PuttingLogger.LogPuttInfo("Main Window launched");
-        }
-        else
-        {
-          PuttingLogger.LogPuttError("ball_tracking folder not found.");
-          PuttingLogger.LogPuttError("Download latest release of ball_tracking program from https://github.com/alleexx/cam-putting-py/releases and unzip to same folder as this program");
         }
     }
 
