@@ -12,6 +12,14 @@ namespace gspro_r10
     private R10ConnectionServer? R10Server;
     private OpenConnectClient OpenConnectClient;
     private BluetoothConnection? BluetoothConnection { get; }
+    internal HttpPuttingServer PuttingConnection { get; }
+
+    public event ClubChangedEventHandler? ClubChanged;
+    public delegate void ClubChangedEventHandler(object sender, ClubChangedEventArgs e);
+    public class ClubChangedEventArgs: EventArgs
+    {
+      public Club Club { get; set; }
+    }
 
     private JsonSerializerOptions serializerSettings = new JsonSerializerOptions()
     {
@@ -22,19 +30,24 @@ namespace gspro_r10
 
     public ConnectionManager(IConfigurationRoot configuration)
     {
+      OpenConnectClient = new OpenConnectClient(this, configuration.GetSection("openConnect"));
+      OpenConnectClient.ConnectAsync();
+
       if (bool.Parse(configuration.GetSection("r10E6Server")["enabled"] ?? "false"))
       {
         R10Server = new R10ConnectionServer(this, configuration.GetSection("r10E6Server"));
         R10Server.Start();
       }
 
-      OpenConnectClient = new OpenConnectClient(this, configuration.GetSection("openConnect"));
-      OpenConnectClient.ConnectAsync();
-
       if (bool.Parse(configuration.GetSection("bluetooth")["enabled"] ?? "false"))
         BluetoothConnection = new BluetoothConnection(this, configuration.GetSection("bluetooth"));
-    }
 
+      if (bool.Parse(configuration.GetSection("putting")["enabled"] ?? "false"))
+      {
+        PuttingConnection = new HttpPuttingServer(this, configuration.GetSection("putting"));
+        PuttingConnection.Start();
+      }
+    }
 
     internal void SendShot(OpenConnect.BallData? ballData, OpenConnect.ClubData? clubData)
     {
@@ -45,6 +58,17 @@ namespace gspro_r10
       ), serializerSettings);
 
       OpenConnectClient.SendAsync(openConnectMessage);
+    }
+
+    public void ClubUpdate(Club club)
+    {
+      Task.Run(() => {
+        ClubChanged?.Invoke(this, new ClubChangedEventArgs()
+        {
+          Club = club
+        });
+      });
+
     }
 
     internal void SendLaunchMonitorReadyUpdate(bool deviceReady)
