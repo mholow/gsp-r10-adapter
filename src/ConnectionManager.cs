@@ -12,7 +12,7 @@ namespace gspro_r10
     private R10ConnectionServer? R10Server;
     private OpenConnectClient OpenConnectClient;
     private BluetoothConnection? BluetoothConnection { get; }
-    internal HttpPuttingServer PuttingConnection { get; }
+    internal HttpPuttingServer? PuttingConnection { get; }
 
     public event ClubChangedEventHandler? ClubChanged;
     public delegate void ClubChangedEventHandler(object sender, ClubChangedEventArgs e);
