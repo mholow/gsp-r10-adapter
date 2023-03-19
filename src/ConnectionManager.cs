@@ -20,7 +20,12 @@ namespace gspro_r10
     };
 
     private int shotNumber = 0;
-    private Club previousClub = Club.Unknown;
+    private PlayerInformation previousInfo = new PlayerInformation()
+    {
+      Club = Club.Unknown,
+      DistanceToTarget = 0.0,
+      Handed = Handed.Unknown
+    };
 
     public ConnectionManager(IConfigurationRoot configuration)
     {
@@ -59,21 +64,20 @@ namespace gspro_r10
       OpenConnectClient.SetDeviceReady(deviceReady);
     }
 
-    internal void ClubChanged(Club newClub)
+    internal void PlayerInformationUpdated(PlayerInformation newInfo)
     {
-      if (previousClub != newClub)
+      if (previousInfo.Club != newInfo.Club)
       {
-        if (previousClub == Club.PT && newClub != Club.PT)
+        if (previousInfo.Club == Club.PT && newInfo.Club != Club.PT)
         {
-          if(PuttingServer != null)
-            PuttingServer.Stop();
-        } else if (newClub == Club.PT)
+          PuttingServer?.Stop();
+        } else if (newInfo.Club == Club.PT)
         {
-          if(PuttingServer != null)
-            PuttingServer.Start();
+          PuttingServer?.Start();
         }
-        previousClub = newClub;
       }
+
+      previousInfo = newInfo;
     }
   }
 }

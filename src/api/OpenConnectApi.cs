@@ -108,6 +108,7 @@ namespace gspro_r10.OpenConnect
   [JsonConverter(typeof(JsonStringEnumConverter))]
   public enum Handed
   {
+    Unknown,
     RH,
     LH
   }
@@ -132,13 +133,7 @@ namespace gspro_r10.OpenConnect
     EndRound = 203
   }
 
-  public class OpenConnectInfoMessage
-  {
-    public Code Code { get; set; }
-    public string Message { get; set; }
-  }
-
-  public class PlayerInformation : OpenConnectInfoMessage
+  public class PlayerInformation
   {
     public Handed Handed { get; set; }
     public Club Club { get; set; }

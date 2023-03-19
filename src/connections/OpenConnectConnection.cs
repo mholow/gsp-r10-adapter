@@ -2,6 +2,7 @@ using System;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using gspro_r10.OpenConnect;
 using Microsoft.Extensions.Configuration;
@@ -75,22 +76,26 @@ namespace gspro_r10
       string received = Encoding.UTF8.GetString(buffer, (int)offset, (int)size);
       OpenConnectLogger.LogGSPIncoming(received);
 
-      OpenConnectInfoMessage m;
+      JsonObject? message = null;
       try
       {
-        m = JsonSerializer.Deserialize<OpenConnectInfoMessage>(received) ?? new OpenConnectInfoMessage();
+        message = JsonObject.Parse(received)?.AsObject();
       }
       catch (JsonException)
       {
-        m = new OpenConnectInfoMessage();
+        message = null;
       }
 
-      switch (m.Code)
+      if (message == null || !message.ContainsKey("Code"))
+        return;
+
+      Code code = (Code) message["Code"]!.GetValue<int>();
+
+      switch (code)
       {
         case Code.PlayerInfo:
-          PlayerInformation info = JsonSerializer.Deserialize<PlayerInformation>(received) ?? new PlayerInformation();
-          OpenConnectLogger.LogGSPInfo($"New Club {info.Club} Selected.");
-          _connectionManager.ClubChanged(info.Club);
+          PlayerInformation info = JsonSerializer.Deserialize<PlayerInformation>(message["Player"]) ?? new PlayerInformation();
+          _connectionManager.PlayerInformationUpdated(info);
           break;
       };
 

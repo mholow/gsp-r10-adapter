@@ -18,7 +18,7 @@ namespace gspro_r10
       _connectionManager = connectionManager;
       _httpListener = new HttpListener();
       int port = int.Parse(configuration["port"] ?? "8888");
-      _httpListener.Prefixes.Add(string.Format("http://127.0.0.1:{0}/", port));
+      _httpListener.Prefixes.Add($"http://127.0.0.1:{port}/");
     }
 
     public void Start()
@@ -58,8 +58,10 @@ namespace gspro_r10
           resp.StatusDescription = "Status OK";
           resp.Headers.Set("Content-Type", "application/json");
 
-          PuttingResponse response = new PuttingResponse();
-          response.result = true;
+          PuttingResponse response = new PuttingResponse
+          {
+            result = true
+          };
 
           byte[] buffer = JsonSerializer.SerializeToUtf8Bytes(response);
           resp.ContentLength64 = buffer.Length;
