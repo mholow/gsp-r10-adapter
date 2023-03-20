@@ -203,11 +203,15 @@ namespace gspro_r10
           // PuttingProcess.BeginOutputReadLine();
           // PuttingProcess.BeginErrorReadLine();
 
-
+          int attempts = 0;
           while (((int)PuttingProcess?.MainWindowHandle) == 0)
           {
-            PuttingLogger.LogPuttInfo("Waiting for main window to launch...");
-            Thread.Sleep(4000);
+            if (attempts % 5 == 0)
+            {
+              PuttingLogger.LogPuttInfo("Waiting for main window to launch...");
+            }
+            Thread.Sleep(1000);
+            attempts += 1;
           }
           PuttingLogger.LogPuttInfo("Main Window launched");
         }
@@ -249,6 +253,7 @@ namespace gspro_r10
     {
       PuttingLogger.LogPuttInfo("Shutting down putting camera");
       PuttingProcess?.Kill();
+      PuttingProcess = null;
     }
   }
 
