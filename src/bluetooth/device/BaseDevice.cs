@@ -91,8 +91,8 @@ namespace gspro_r10.bluetooth
       Model = Encoding.ASCII.GetString(modelCharacteristic.ReadValueAsync().WaitAsync(TimeSpan.FromSeconds(5)).Result);
       GattService batteryService = Device.Gatt.GetPrimaryServiceAsync(BATTERY_SERVICE_UUID).WaitAsync(TimeSpan.FromSeconds(5)).Result;
       GattCharacteristic batteryCharacteristic = batteryService.GetCharacteristicAsync(BATTERY_CHARACTERISTIC_UUID).WaitAsync(TimeSpan.FromSeconds(5)).Result;
-      batteryCharacteristic.StartNotificationsAsync().Wait(TimeSpan.FromSeconds(5));
       batteryCharacteristic.CharacteristicValueChanged += (o, e) => Battery = e.Value[0];
+      batteryCharacteristic.StartNotificationsAsync().Wait(TimeSpan.FromSeconds(5));
       GattService deviceInterfaceService = Device.Gatt.GetPrimaryServiceAsync(DEVICE_INTERFACE_SERVICE).WaitAsync(TimeSpan.FromSeconds(5)).Result;
       GattCharacteristic deviceInterfaceNotifier = deviceInterfaceService.GetCharacteristicAsync(DEVICE_INTERFACE_NOTIFIER).WaitAsync(TimeSpan.FromSeconds(5)).Result;
       mGattWriter = deviceInterfaceService.GetCharacteristicAsync(DEVICE_INTERFACE_WRITER).WaitAsync(TimeSpan.FromSeconds(5)).Result;
@@ -344,6 +344,8 @@ namespace gspro_r10.bluetooth
 
           foreach (var d in BatteryLifeUpdated?.GetInvocationList() ?? Array.Empty<Delegate>())
             BatteryLifeUpdated -= (d as BatteryEventHandler);
+
+          Device?.Gatt?.Disconnect();
         }
 
         mDisposedValue = true;

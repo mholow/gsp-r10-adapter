@@ -14,15 +14,20 @@ namespace gspro_r10
       {
         builder.AddJsonFile("settings.json");
       }
+      else
+      {
+        BaseLogger.LogMessage($"settings.json file not found or could not be opened in {Directory.GetCurrentDirectory()}", "Main", LogMessageType.Error);
+      }
 
       IConfigurationRoot configuration = builder.Build();
       
       Console.Title = "GSP-R10 Connect";
-      Console.WriteLine("GSP - R10 Bridge starting. Press enter key to close");
-      new ConnectionManager(configuration);
+      BaseLogger.LogMessage("GSP - R10 Bridge starting. Press enter key to close", "Main");
+      ConnectionManager manager = new ConnectionManager(configuration);
       Console.ReadLine();
-
-      Console.WriteLine("Exiting...");
+      BaseLogger.LogMessage("Shutting down...", "Main");
+      manager.Dispose();
+      BaseLogger.LogMessage("Exiting...", "Main");
     }
   }
 }

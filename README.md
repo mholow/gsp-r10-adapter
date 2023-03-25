@@ -1,10 +1,11 @@
 # gsp-r10-adapter
 
-Utility to bridge R10 launch monitor to GSPro. Starts an "E6 Connect" compatible server and translates the messages into GSPro OpenConnect format.  Also provides an option to connect directly to the R10 via bluetooth.
+Utility to bridge R10 launch monitor to GSPro. Supports the following
+  - An "E6 Connect" compatible server for use with the Launch Monitor's E6 integration
+  - Direct bluetooth connection to R10
+  - Webcam putting integration with https://github.com/alleexx/cam-putting-py
 
-Heavily inspired by this project https://github.com/travislang/gspro-garmin-connect-v2. 
-
-The goal of this project was to provide an ultra lightweight alterntive to the current offering, with a focus on API transparency.
+The goal of this project was to provide an ultra lightweight alterntive to the current offerings, with a focus on API transparency.
 
 ![Sample](screenshot.png)
 
@@ -20,6 +21,15 @@ In order to use the direct bluetooth connection to the R10 you must
   - This step only needs to be done once
   - You may need to disable bluetooth on previously paired devices to prevent them from stealing the connection
 
+## Using the putting integration
+
+In order to use the putting integration you must
+- Enable putting in `settings.json` file
+- Download ball_tracking software from https://github.com/alleexx/cam-putting-py/releases
+  - If you want this program to manage opening/closing of putting camera, place ball_tracking in same folder as this program
+- Read https://github.com/alleexx/cam-putting-py for webcam setup/troubleshooting
+- Read putting section `settings.json` file to determine optimal settings for your setup
+  - 
 
 ## Running
 
@@ -31,5 +41,5 @@ In order to use the direct bluetooth connection to the R10 you must
 
 ### From Source
 
-- Install a dotnet 6 sdk if you don't have one already
+- Install a dotnet 7 sdk if you don't have one already
 - `dotnet run` from project directory

@@ -29,6 +29,9 @@
     "keepPuttingCamOnTop": true,  // if true, always bring putting window to front when putting
     "webcamIndex": 0,
     "ballColor": "white",
-    "camPreviewWidth": 300  // (pixels) resize camera view 
+    "camPreviewWidth": 300,  // (pixels) resize camera view 
+    "exePath": "./ball_tracking/ball_tracking.exe",
+    "additionalExeArgs": "", // additional arguments for putting exe. ie '-d 1' for debug
+    "hideExeLogs": false
   }
 }

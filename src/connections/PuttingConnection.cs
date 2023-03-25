@@ -1,15 +1,11 @@
-using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
-using System.Threading;
 using gspro_r10.Putting;
 using Microsoft.Extensions.Configuration;
 using NetCoreServer;
-using TcpClient = NetCoreServer.TcpClient;
 
 
 namespace gspro_r10
@@ -94,10 +90,11 @@ namespace gspro_r10
     private const UInt32 SWP_NOSIZE = 0x0001;
     private const UInt32 SWP_NOMOVE = 0x0002;
     private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
-
     public ConnectionManager ConnectionManager;
     public IConfigurationSection Configuration;
     public bool PuttingEnabled = false;
+    private bool mDisposing;
+
     public Process? PuttingProcess { get; private set; }
     public bool OnlyLaunchWhenPutting { get; }
     public bool KeepPuttingCamOnTop { get; }
@@ -105,6 +102,13 @@ namespace gspro_r10
     public int WebcamIndex { get; }
     public string BallColor { get; }
     public int CamPreviewWidth { get; }
+    public string ExecutablePath { get; }
+    public string ExecutableName { get; }
+    public string AdditionalExeArgs { get; }
+    public bool HideExeLogs { get; }
+    protected override TcpSession CreateSession() => new HttpPuttingSession(this, ConnectionManager);
+    protected override void OnError(SocketError error) => PuttingLogger.LogPuttError($"HTTP session caught an error: {error}");
+
     public HttpPuttingServer(ConnectionManager connectionManager, IConfigurationSection configuration)
       : base(IPAddress.Any, int.Parse(configuration["port"] ?? "8888"))
     {
@@ -118,13 +122,12 @@ namespace gspro_r10
       WebcamIndex = int.Parse(Configuration["webcamIndex"] ?? "0");
       BallColor = Configuration["ballColor"] ?? "white";
       CamPreviewWidth = int.Parse(Configuration["camPreviewWidth"] ?? "640");
+      ExecutablePath = Configuration["exePath"] ?? "./ball_tracking/ball_tracking.exe";
+      ExecutableName = Path.GetFileName(ExecutablePath);
+      AdditionalExeArgs = Configuration["additionalExeArgs"] ?? string.Empty;
+      HideExeLogs = bool.Parse(Configuration["hideExeLogs"] ?? "false");
 
-      if (LaunchBallTracker)
-      {
-        CheckBallTrackingExists();
-      }
-
-      if (LaunchBallTracker && !OnlyLaunchWhenPutting)
+      if (LaunchBallTracker && CheckBallTrackingExists() && !OnlyLaunchWhenPutting)
       {
         LaunchProcess();
         if (KeepPuttingCamOnTop)
@@ -139,39 +142,36 @@ namespace gspro_r10
         }
         else
         {
-          StopPutting();
+          if (PuttingEnabled)
+            StopPutting();
         }
       };
     }
 
-    protected override TcpSession CreateSession() { return new HttpPuttingSession(this, ConnectionManager); }
-
-    protected override void OnError(SocketError error)
-    {
-      PuttingLogger.LogPuttError($"HTTP session caught an error: {error}");
-    }
-
     private void StartPutting()
     {
-      if (!PuttingEnabled)
+      PuttingEnabled = true;
+      if (LaunchBallTracker && PuttingProcess == null)
       {
-        PuttingEnabled = true;
-        if (LaunchBallTracker && (OnlyLaunchWhenPutting || PuttingProcess == null))
-        {
-          LaunchProcess();
-        }
+        LaunchProcess();
       }
 
       if (KeepPuttingCamOnTop)
         FocusProcess();
-
     }
+    private void StopPutting(Boolean force = false)
+    {
+      PuttingEnabled = false;
+      if ((LaunchBallTracker && OnlyLaunchWhenPutting) || force)
+        KillProcess();
+    }
+
 
     private bool CheckBallTrackingExists()
     {
-        if (!(Directory.Exists("./ball_tracking") && File.Exists("ball_tracking/ball_tracking.exe")))
+        if (!File.Exists(ExecutablePath))
         {
-          PuttingLogger.LogPuttError("ball_tracking folder not found.");
+          PuttingLogger.LogPuttError($"{ExecutablePath} file not found.");
           PuttingLogger.LogPuttError("Download latest release of ball_tracking program from https://github.com/alleexx/cam-putting-py/releases and unzip to same folder as this program");
           return false;
         }
@@ -182,29 +182,43 @@ namespace gspro_r10
     {
         if (CheckBallTrackingExists())
         {
-          PuttingLogger.LogPuttInfo("Starting putting camera");
-
-          ProcessStartInfo startInfo = new ProcessStartInfo("ball_tracking/ball_tracking.exe");
-          startInfo.Arguments = $" -w {WebcamIndex} -c {BallColor} -r {CamPreviewWidth}";
-          startInfo.WorkingDirectory = "ball_tracking";
+          ProcessStartInfo startInfo = new ProcessStartInfo(ExecutablePath);
+          startInfo.Arguments = $"-w {WebcamIndex} -c {BallColor} -r {CamPreviewWidth}";
+          startInfo.WorkingDirectory = Path.GetDirectoryName(ExecutablePath);
           startInfo.WindowStyle = ProcessWindowStyle.Normal;
           startInfo.CreateNoWindow = false;
           startInfo.UseShellExecute = false;
           startInfo.RedirectStandardOutput = true;
           startInfo.RedirectStandardError = true;
+          startInfo.RedirectStandardInput = true;
           startInfo.EnvironmentVariables["PYTHONUNBUFFERED"] = "TRUE";
+          startInfo.Environment["PYTHONUNBUFFERED"] = "TRUE";
 
+          if (!string.IsNullOrWhiteSpace(AdditionalExeArgs))
+          {
+            startInfo.Arguments = $"{startInfo.Arguments} {AdditionalExeArgs}";
+          }
+
+          PuttingLogger.LogPuttInfo($"Starting putting camera: '{startInfo.FileName} {startInfo.Arguments}' ");
           PuttingProcess = Process.Start(startInfo);
 
-          // Following is supposed to catch logs from python stdout. It is not working for some reason, I'm blaming python
-          // PuttingProcess.EnableRaisingEvents = true;
-          // PuttingProcess.OutputDataReceived += CatchBallTrackerLogs;
-          // PuttingProcess.ErrorDataReceived += CatchBallTrackerErrors;
-          // PuttingProcess.BeginOutputReadLine();
-          // PuttingProcess.BeginErrorReadLine();
+          if (PuttingProcess == null)
+          {
+            PuttingLogger.LogPuttError("Error opening putting process");
+            return;
+          }
+          Console.WriteLine(PuttingProcess.BasePriority);
+
+          PuttingProcess.EnableRaisingEvents = true;
+          PuttingProcess.OutputDataReceived += OnBallTrackerLogs;
+          PuttingProcess.ErrorDataReceived += OnBallTrackerErrors;
+          PuttingProcess.BeginOutputReadLine();
+          PuttingProcess.BeginErrorReadLine();
+
+          PuttingProcess.Exited += OnPuttingProcessClosed;
 
           int attempts = 0;
-          while (((int)PuttingProcess?.MainWindowHandle) == 0)
+          while (((int)PuttingProcess.MainWindowHandle) == 0)
           {
             if (attempts % 5 == 0)
             {
@@ -217,14 +231,29 @@ namespace gspro_r10
         }
     }
 
-    private void CatchBallTrackerLogs(object e, DataReceivedEventArgs args)
+    private void OnBallTrackerLogs(object _, DataReceivedEventArgs args)
     {
-      PuttingLogger.LogPuttInfo($"[ball_tracking] {args.Data}");
+      if (!string.IsNullOrWhiteSpace(args.Data) && !HideExeLogs)
+        PuttingLogger.LogPuttInfo($"[{ExecutableName}] {args.Data}");
     }
 
-    private void CatchBallTrackerErrors(object e, DataReceivedEventArgs args)
+    private void OnBallTrackerErrors(object _, DataReceivedEventArgs args)
     {
-      PuttingLogger.LogPuttError($"[ball_tracking] {args.Data}");
+      if (!string.IsNullOrWhiteSpace(args.Data) && !HideExeLogs)
+        PuttingLogger.LogPuttError($"[{ExecutableName}] {args.Data}");
+    }
+    private void OnPuttingProcessClosed(object? _, EventArgs? args)
+    {
+      PuttingProcess = null;
+      if ((PuttingEnabled || (!OnlyLaunchWhenPutting)) && !mDisposing)
+      {
+        PuttingLogger.LogPuttError($"{ExecutableName} closed unexpectedly. Reopening...");
+        StartPutting();
+      }
+      else
+      {
+        PuttingLogger.LogPuttInfo($"{ExecutableName} closed");
+      }
     }
 
     private void FocusProcess()
@@ -232,28 +261,34 @@ namespace gspro_r10
       if (PuttingProcess != null)
       {
         IntPtr handle = PuttingProcess.MainWindowHandle;
-        SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
-
-        BringWindowToTop(handle);
-        SetForegroundWindow(handle);
+        if (handle != IntPtr.Zero)
+        {
+          SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
+          BringWindowToTop(handle);
+          SetForegroundWindow(handle);
+        }
       }
     }
     
-    private void StopPutting()
-    {
-      if (PuttingEnabled)
-      {
-        PuttingEnabled = false;
-        if (LaunchBallTracker && OnlyLaunchWhenPutting)
-          KillProcess();
-      }
-    }
-
     private void KillProcess()
     {
       PuttingLogger.LogPuttInfo("Shutting down putting camera");
       PuttingProcess?.Kill();
       PuttingProcess = null;
+    }
+
+
+    protected override void Dispose(bool disposing)
+    {
+      if (!IsDisposed)
+      {
+        if (disposing)
+        {
+          mDisposing = true;
+          StopPutting(force: true);
+          base.Dispose(disposing);
+        }
+      }
     }
   }
 

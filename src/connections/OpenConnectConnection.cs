@@ -1,8 +1,6 @@
-using System;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using gspro_r10.OpenConnect;
 using Microsoft.Extensions.Configuration;
 using TcpClient = NetCoreServer.TcpClient;
