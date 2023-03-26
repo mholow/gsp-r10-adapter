@@ -16,9 +16,8 @@ mkdir ${BASE_DIR}/publish
 
 dotnet publish -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -r ${PLATFORM} -c Release --self-contained true
 
-zip -j  ${OUTDIR}/gsp-r10-adapter-v${VERSION}-win-x64.zip ${PUBLISH_DIR}/*
-
-sed -i 's|false, //bluetooth enabled|true, //bluetooth enabled|' ${PUBLISH_DIR}/settings.json
-
 zip -j  ${OUTDIR}/gsp-r10-adapter-v${VERSION}-win-x64-bluetooth-enabled.zip ${PUBLISH_DIR}/*
 
+sed -i 's|true, //bluetooth enabled|false, //bluetooth enabled|' ${PUBLISH_DIR}/settings.json
+
+zip -j  ${OUTDIR}/gsp-r10-adapter-v${VERSION}-win-x64.zip ${PUBLISH_DIR}/*

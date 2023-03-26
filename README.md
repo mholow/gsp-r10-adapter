@@ -29,7 +29,7 @@ In order to use the putting integration you must
   - If you want this program to manage opening/closing of putting camera, place ball_tracking in same folder as this program
 - Read https://github.com/alleexx/cam-putting-py for webcam setup/troubleshooting
 - Read putting section `settings.json` file to determine optimal settings for your setup
-  - 
+
 
 ## Running
 
