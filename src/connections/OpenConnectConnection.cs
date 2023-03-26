@@ -1,8 +1,7 @@
-using System;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
+using gspro_r10.OpenConnect;
 using Microsoft.Extensions.Configuration;
 using TcpClient = NetCoreServer.TcpClient;
 
@@ -12,12 +11,13 @@ namespace gspro_r10
   {
     public Timer? PingTimer { get; private set; }
     public bool InitiallyConnected { get; private set; }
+    public ConnectionManager ConnectionManager { get; set; }
     private bool _stop;
 
     public OpenConnectClient(ConnectionManager connectionManager, IConfigurationSection configuration)
       : base(configuration["ip"] ?? "127.0.0.1", int.Parse(configuration["port"] ?? "921"))
     {
-
+      ConnectionManager = connectionManager;
     }
 
     public void DisconnectAndStop()
@@ -71,6 +71,30 @@ namespace gspro_r10
     {
       string received = Encoding.UTF8.GetString(buffer, (int)offset, (int)size);
       OpenConnectLogger.LogGSPIncoming(received);
+
+      // Sometimes multiple responses received in one buffer. Convert to list format to handle
+      // ie "{one}{two}" => "[{one},{two}]"
+      string listReceived = $"[{received.Replace("}{", "},{")}]";
+      try
+      {
+        List<OpenConnectApiResponse> responses = JsonSerializer.Deserialize<List<OpenConnectApiResponse>>(listReceived) ?? new List<OpenConnectApiResponse>();
+        foreach(OpenConnectApiResponse resp in responses)
+        {
+          HandleResponse(resp);
+        }
+      }
+      catch
+      {
+        OpenConnectLogger.LogGSPError("Error parsing response");
+      }
+    }
+
+    private void HandleResponse(OpenConnectApiResponse response)
+    {
+      if (response.Player != null && response.Player.Club != null)
+      {
+        ConnectionManager.ClubUpdate(response.Player.Club.Value);
+      }
     }
 
     protected override void OnError(SocketError error)

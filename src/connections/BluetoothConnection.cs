@@ -6,10 +6,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace gspro_r10
 {
-  public class BluetoothConnection
+  public class BluetoothConnection: IDisposable
   {
     private static readonly double METERS_PER_S_TO_MILES_PER_HOUR = 2.2369;
     private static readonly float FEET_TO_METERS = 1 / 3.281f;
+    private bool disposedValue;
+
     public ConnectionManager ConnectionManager { get; }
     public IConfigurationSection Configuration { get; }
     public int ReconnectInterval { get; }
@@ -59,9 +61,9 @@ namespace gspro_r10
     private void OnDeviceDisconnected(object? sender, EventArgs args)
     {
         BluetoothLogger.Error("Lost bluetooth connection");
-        LaunchMonitor?.Dispose();
         if (Device != null)
           Device.GattServerDisconnected -= OnDeviceDisconnected;
+        LaunchMonitor?.Dispose();
 
         Task.Run(ConnectToDevice);
     }
@@ -153,6 +155,27 @@ namespace gspro_r10
         FaceToTarget = clubMetrics.ClubAngleFace,
         Path = clubMetrics.ClubAnglePath
       };
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+      if (!disposedValue)
+      {
+        if (disposing)
+        {
+          if (Device != null)
+            Device.GattServerDisconnected -= OnDeviceDisconnected;
+          LaunchMonitor?.Dispose();
+        }
+
+        disposedValue = true;
+      }
+    }
+
+    public void Dispose()
+    {
+      Dispose(disposing: true);
+      GC.SuppressFinalize(this);
     }
   }
 

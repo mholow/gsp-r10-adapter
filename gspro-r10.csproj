@@ -2,12 +2,13 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0-windows10.0.19041</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.19041</TargetFramework>
     <RootNamespace>gspro_r10</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <VersionPrefix>2.1.0</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,12 +17,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
-    <PackageReference Include="NetCoreServer" Version="6.7.0" />
-    <PackageReference Include="InTheHand.BluetoothLE" Version="4.0.27" />
-    <PackageReference Include="Google.Protobuf" Version="3.21.12" />
-    <PackageReference Include="Grpc" Version="2.46.6" />
-    <PackageReference Include="Grpc.Tools" Version="2.51.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    <PackageReference Include="NetCoreServer" Version="7.0.0" />
+    <PackageReference Include="InTheHand.BluetoothLE" Version="4.0.33" />
+    <PackageReference Include="Google.Protobuf" Version="3.22.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.53.0">
+      <IncludeAssets>build; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>

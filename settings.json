@@ -8,7 +8,7 @@
     "port": 2483
   },
   "bluetooth": {
-    "enabled": true,
+    "enabled": true, //bluetooth enabled
     "bluetoothDeviceName": "Approach R10",
     "reconnectInterval": 10, // seconds
     "sendStatusChangesToGSP": false, // send device readiness updates to gsp (does nothing as of today)
@@ -20,5 +20,18 @@
     "temperature": 60, // fahrenheit 
     "airDensity": 1.225, // kg/m^3
     "teeDistanceInFeet": 7 // distance from R10 to ball in feet
+  },
+  "putting": {
+    "enabled": false,
+    "port": 8888,
+    "launchBallTracker": true, // if true, program will launch ball tracking software. If false, you will need to launch it independantly of this program
+    "onlyLaunchWhenPutting": true, // if true, program will launch and close depending on club selection. If false, program will launch and stay open
+    "keepPuttingCamOnTop": true,  // if true, always bring putting window to front when putting
+    "webcamIndex": 0,
+    "ballColor": "white",
+    "camPreviewWidth": 300,  // (pixels) resize camera view 
+    "exePath": "./ball_tracking/ball_tracking.exe",
+    "additionalExeArgs": "", // additional arguments for putting exe. ie '-d 1' for debug
+    "hideExeLogs": false
   }
 }

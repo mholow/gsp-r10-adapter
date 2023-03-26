@@ -12,7 +12,7 @@ namespace gspro_r10
     private static object lockObject = new Object();
 
     public static void LogDebug(string message) => LogMessage(message, "DEBUG", LogMessageType.Informational, ConsoleColor.Gray);
-    public static void LogMessage(string message, string component, LogMessageType type, ConsoleColor color)
+    public static void LogMessage(string message, string component = "", LogMessageType type = LogMessageType.Informational, ConsoleColor color = ConsoleColor.White)
     {
       lock (lockObject)
       {

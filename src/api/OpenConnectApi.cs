@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace gspro_r10.OpenConnect
 {
   public class OpenConnectApiMessage
@@ -101,6 +103,60 @@ namespace gspro_r10.OpenConnect
     public double HorizontalFaceImpact { get; set; }
     public double ClosureRate { get; set; }
 
+  }
+
+  public class OpenConnectApiResponse
+  {
+    public int Code { get; set; }
+    public string? Message { get; set; }
+    public PlayerInfo? Player { get; set; }
+  }
+
+  public class PlayerInfo
+  {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public Handed? Handed { get; set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public Club? Club { get; set; }
+    public float? DistanceToTarget { get; set; }
+  }
+
+  public enum Handed
+  {
+    RH,
+    LH
+  }
+
+  public enum Club
+  {
+    unknown,
+    DR,
+    W2,
+    W3,
+    W4,
+    W5,
+    W6,
+    W7,
+    I1,
+    I2,
+    I3,
+    I4,
+    I5,
+    I6,
+    I7,
+    I8,
+    I9,
+    H2,
+    H3,
+    H4,
+    H5,
+    H6,
+    H7,
+    PW,
+    GW,
+    SW,
+    LW,
+    PT
   }
 
 }
