@@ -61,9 +61,9 @@ namespace gspro_r10
     private void OnDeviceDisconnected(object? sender, EventArgs args)
     {
         BluetoothLogger.Error("Lost bluetooth connection");
-        LaunchMonitor?.Dispose();
         if (Device != null)
           Device.GattServerDisconnected -= OnDeviceDisconnected;
+        LaunchMonitor?.Dispose();
 
         Task.Run(ConnectToDevice);
     }
@@ -163,6 +163,8 @@ namespace gspro_r10
       {
         if (disposing)
         {
+          if (Device != null)
+            Device.GattServerDisconnected -= OnDeviceDisconnected;
           LaunchMonitor?.Dispose();
         }
 

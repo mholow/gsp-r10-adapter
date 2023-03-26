@@ -8,7 +8,7 @@
     "port": 2483
   },
   "bluetooth": {
-    "enabled": true,
+    "enabled": false, //bluetooth enabled
     "bluetoothDeviceName": "Approach R10",
     "reconnectInterval": 10, // seconds
     "sendStatusChangesToGSP": false, // send device readiness updates to gsp (does nothing as of today)

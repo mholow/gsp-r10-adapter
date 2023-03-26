@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <VersionPrefix>2.1.0</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
