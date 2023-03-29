@@ -72,20 +72,34 @@ namespace gspro_r10.bluetooth
 
     public override bool Setup()
     {
+      if (DebugLogging)
+        BaseLogger.LogDebug("Subscribing to measurement service");
       GattService measService = Device.Gatt.GetPrimaryServiceAsync(MEASUREMENT_SERVICE_UUID).WaitAsync(TimeSpan.FromSeconds(5)).Result;
       GattCharacteristic measCharacteristic = measService.GetCharacteristicAsync(MEASUREMENT_CHARACTERISTIC_UUID).WaitAsync(TimeSpan.FromSeconds(5)).Result;
-      measCharacteristic.StartNotificationsAsync().Wait(TimeSpan.FromSeconds(5));
+      if (!measCharacteristic.StartNotificationsAsync().Wait(TimeSpan.FromSeconds(5)))
+      {
+        BluetoothLogger.Error("Error subscribing to measurement characteristic");
+      }
 
       // Bytes that come after each shot. No idea how to parse these
       measCharacteristic.CharacteristicValueChanged += (o, e) => {};
-
+      if (DebugLogging)
+        BaseLogger.LogDebug("Subscribing to control service");
       GattCharacteristic controlPoint = measService.GetCharacteristicAsync(CONTROL_POINT_CHARACTERISTIC_UUID).WaitAsync(TimeSpan.FromSeconds(5)).Result;
-      controlPoint.StartNotificationsAsync().Wait(TimeSpan.FromSeconds(5));
+      if (!controlPoint.StartNotificationsAsync().Wait(TimeSpan.FromSeconds(5)))
+      {
+        BluetoothLogger.Error("Error subscribing to the control characteristic");
+      }
       // Response to waiting device through controlPointInterface. Unused for now
       controlPoint.CharacteristicValueChanged += (o, e) => { };
 
+      if (DebugLogging)
+        BaseLogger.LogDebug("Subscribing to status service");
       GattCharacteristic statusCharacteristic = measService.GetCharacteristicAsync(STATUS_CHARACTERISTIC_UUID).WaitAsync(TimeSpan.FromSeconds(5)).Result;
-      statusCharacteristic.StartNotificationsAsync().Wait(TimeSpan.FromSeconds(5));
+      if (!statusCharacteristic.StartNotificationsAsync().Wait(TimeSpan.FromSeconds(5)))
+      {
+        BluetoothLogger.Error("Error subscribing to the status characteristic");
+      }
       statusCharacteristic.CharacteristicValueChanged += (o, e) =>
       {
         bool isAwake = e.Value[1] == (byte)0;
@@ -101,7 +115,11 @@ namespace gspro_r10.bluetooth
 
       bool baseSetupSuccess = base.Setup();
       if (!baseSetupSuccess)
+      {
+        BluetoothLogger.Error("Error during base device setup");
         return false;
+      }
+
 
       WakeDevice();
       CurrentState = StatusRequest() ?? StateType.Error;
