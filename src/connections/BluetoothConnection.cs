@@ -110,7 +110,7 @@ namespace gspro_r10
       float humidity = float.Parse(Configuration["humidity"] ?? "1");
       float altitude = float.Parse(Configuration["altitude"] ?? "0");
       float airDensity = float.Parse(Configuration["airDensity"] ?? "1");
-      float teeDistanceInFeet = float.Parse(Configuration["teeDistanceInFeet"] ?? "7"); ;
+      float teeDistanceInFeet = float.Parse(Configuration["teeDistanceInFeet"] ?? "7");
       float teeRange = teeDistanceInFeet * FEET_TO_METERS;
 
       lm.ShotConfig(temperature, humidity, altitude, airDensity, teeRange);
