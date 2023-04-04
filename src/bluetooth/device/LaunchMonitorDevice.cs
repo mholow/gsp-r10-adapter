@@ -18,6 +18,8 @@ namespace gspro_r10.bluetooth
     internal static Guid CONTROL_POINT_CHARACTERISTIC_UUID = Guid.Parse("6A4E3402-667B-11E3-949A-0800200C9A66");
     internal static Guid STATUS_CHARACTERISTIC_UUID = Guid.Parse("6A4E3403-667B-11E3-949A-0800200C9A66");
 
+    private HashSet<uint> ProcessedShotIDs = new HashSet<uint>();
+
     private StateType _currentState;
     public StateType CurrentState { 
       get { return _currentState; } 
@@ -159,7 +161,15 @@ namespace gspro_r10.bluetooth
         }
         if (notification.Metrics != null)
         {
-          ShotMetrics?.Invoke(this, new MetricsEventArgs() { Metrics = notification.Metrics });
+          if (ProcessedShotIDs.Contains(notification.Metrics.ShotId))
+          {
+            BluetoothLogger.Error($"Received duplicate shot data {notification.Metrics.ShotId}.  Ignoring");
+          }
+          else
+          {
+            ProcessedShotIDs.Add(notification.Metrics.ShotId);
+            ShotMetrics?.Invoke(this, new MetricsEventArgs() { Metrics = notification.Metrics });
+          }
         }
         if (notification.TiltCalibration != null)
         {
