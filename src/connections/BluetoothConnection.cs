@@ -187,36 +187,36 @@ namespace gspro_r10
       {
         StringBuilder sb = new StringBuilder();
         sb.AppendLine($"===== Shot {metrics.ShotId} =====");
-        sb.AppendLine($"{"Ball Metrics",-40}┃ {"Club Metrics",-40}┃ {"Swing Metrics",-40}");
-        sb.AppendLine($"{new string('━', 40)}╋━{new string('━', 40)}╋━{new string('━', 40)}");
-        sb.Append($" {"BallSpeed:",-15} {metrics.BallMetrics?.BallSpeed * METERS_PER_S_TO_MILES_PER_HOUR,-22} ┃");
-        sb.Append($" {"Club Speed:",-20} {metrics.ClubMetrics?.ClubHeadSpeed * METERS_PER_S_TO_MILES_PER_HOUR,-18} ┃");
+        sb.AppendLine($"{"Ball Metrics",-40}│ {"Club Metrics",-40}│ {"Swing Metrics",-40}");
+        sb.AppendLine($"{new string('─', 40)}┼─{new string('─', 40)}┼─{new string('─', 40)}");
+        sb.Append($" {"BallSpeed:",-15} {metrics.BallMetrics?.BallSpeed * METERS_PER_S_TO_MILES_PER_HOUR,-22} │");
+        sb.Append($" {"Club Speed:",-20} {metrics.ClubMetrics?.ClubHeadSpeed * METERS_PER_S_TO_MILES_PER_HOUR,-18} │");
         sb.AppendLine($" {"Backswing Start:",-20} {metrics.SwingMetrics?.BackSwingStartTime,-17}");
 
-        sb.Append($" {"VLA:",-15} {metrics.BallMetrics?.LaunchAngle,-22} ┃");
-        sb.Append($" {"Club Path:",-20} {metrics.ClubMetrics?.ClubAnglePath,-18} ┃");
+        sb.Append($" {"VLA:",-15} {metrics.BallMetrics?.LaunchAngle,-22} │");
+        sb.Append($" {"Club Path:",-20} {metrics.ClubMetrics?.ClubAnglePath,-18} │");
         sb.AppendLine($" {"Downswing Start:",-20} {metrics.SwingMetrics?.DownSwingStartTime,-17}");
 
-        sb.Append($" {"HLA:",-15} {metrics.BallMetrics?.LaunchDirection,-22} ┃");
-        sb.Append($" {"Club Face:",-20} {metrics.ClubMetrics?.ClubAngleFace,-18} ┃");
+        sb.Append($" {"HLA:",-15} {metrics.BallMetrics?.LaunchDirection,-22} │");
+        sb.Append($" {"Club Face:",-20} {metrics.ClubMetrics?.ClubAngleFace,-18} │");
         sb.AppendLine($" {"Impact time:",-20} {metrics.SwingMetrics?.ImpactTime,-17}");
 
         uint? backswingDuration = metrics.SwingMetrics?.DownSwingStartTime - metrics.SwingMetrics?.BackSwingStartTime;
-        sb.Append($" {"Spin Axis:",-15} {metrics.BallMetrics?.SpinAxis * -1,-22} ┃");
-        sb.Append($" {"Attack Angle:",-20} {metrics.ClubMetrics?.AttackAngle,-18} ┃");
+        sb.Append($" {"Spin Axis:",-15} {metrics.BallMetrics?.SpinAxis * -1,-22} │");
+        sb.Append($" {"Attack Angle:",-20} {metrics.ClubMetrics?.AttackAngle,-18} │");
         sb.AppendLine($" {"Backswing duration:",-20} {backswingDuration,-17}");
 
         uint? downswingDuration = metrics.SwingMetrics?.ImpactTime - metrics.SwingMetrics?.DownSwingStartTime;
-        sb.Append($" {"Total Spin:",-15} {metrics.BallMetrics?.TotalSpin,-22} ┃");
-        sb.Append($" {"",-20} {"",-18} ┃");
+        sb.Append($" {"Total Spin:",-15} {metrics.BallMetrics?.TotalSpin,-22} │");
+        sb.Append($" {"",-20} {"",-18} │");
         sb.AppendLine($" {"Downswing duration:",-20} {downswingDuration,-17}");
 
-        sb.Append($" {"Ball Type:",-15} {metrics.BallMetrics?.GolfBallType,-22} ┃");
-        sb.Append($" {"",-20} {"",-18} ┃");
+        sb.Append($" {"Ball Type:",-15} {metrics.BallMetrics?.GolfBallType,-22} │");
+        sb.Append($" {"",-20} {"",-18} │");
         sb.AppendLine($" {"Tempo:",-20} {(float)(backswingDuration ?? 0) / downswingDuration,-17}");
 
-        sb.Append($" {"Spin Calc:",-15} {metrics.BallMetrics?.SpinCalculationType,-22} ┃");
-        sb.Append($" {"",-20} {"",-18} ┃");
+        sb.Append($" {"Spin Calc:",-15} {metrics.BallMetrics?.SpinCalculationType,-22} │");
+        sb.Append($" {"",-20} {"",-18} │");
         sb.AppendLine($" {"Normal/Practice:",-20} {metrics.ShotType,-17}");
         BluetoothLogger.Info(sb.ToString());
 
