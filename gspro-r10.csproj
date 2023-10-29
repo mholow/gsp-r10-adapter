@@ -20,6 +20,9 @@
     <PackageReference Include="NetCoreServer" Version="7.0.0" />
     <PackageReference Include="InTheHand.BluetoothLE" Version="4.0.33" />
     <PackageReference Include="Google.Protobuf" Version="3.22.1" />
+    <PackageReference Include="OpenCvSharp4" Version="4.7.0.20230115" />
+    <PackageReference Include="OpenCvSharp4.Extensions" Version="4.7.0.20230115" />
+    <PackageReference Include="OpenCvSharp4.Windows" Version="4.7.0.20230115" />
     <PackageReference Include="Grpc.Tools" Version="2.53.0">
       <IncludeAssets>build; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

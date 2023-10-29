@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using gspro_r10.OpenConnect;
 using Microsoft.Extensions.Configuration;
+using Recording;
 
 namespace gspro_r10
 {
@@ -11,6 +12,8 @@ namespace gspro_r10
     private OpenConnectClient OpenConnectClient;
     private BluetoothConnection? BluetoothConnection { get; }
     internal HttpPuttingServer? PuttingConnection { get; }
+    internal Recorder SwingRecorder { get; }
+
     public event ClubChangedEventHandler? ClubChanged;
     public delegate void ClubChangedEventHandler(object sender, ClubChangedEventArgs e);
     public class ClubChangedEventArgs: EventArgs
@@ -45,6 +48,9 @@ namespace gspro_r10
         PuttingConnection = new HttpPuttingServer(this, configuration.GetSection("putting"));
         PuttingConnection.Start();
       }
+
+      SwingRecorder = new Recording.Recorder(0, 640, 480, 60);
+
     }
 
     internal void SendShot(OpenConnect.BallData? ballData, OpenConnect.ClubData? clubData)
@@ -56,6 +62,8 @@ namespace gspro_r10
       ), serializerSettings);
 
       OpenConnectClient.SendAsync(openConnectMessage);
+
+      SwingRecorder.PlayLastNSeconds(2);
     }
 
     public void ClubUpdate(Club club)
