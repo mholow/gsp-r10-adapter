@@ -176,7 +176,7 @@ namespace gspro_r10.bluetooth
     {
       while (!mCancellationToken.IsCancellationRequested)
         if (mWriterQueue.Count > 0)
-          mGattWriter?.WriteValueWithResponseAsync(mWriterQueue.Dequeue());
+          { try { mGattWriter?.WriteValueWithResponseAsync(mWriterQueue.Dequeue()).Wait(); } catch (Exception ex) { Console.WriteLine($"BLE write error: {ex.Message}"); } }
         else
           mWriterSignal.WaitOne(5000);
     }

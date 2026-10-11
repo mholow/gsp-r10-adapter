@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0-windows10.0.19041</TargetFramework>
+    <TargetFrameworks>net10.0-windows10.0.19041;net10.0</TargetFrameworks>
     <RootNamespace>gspro_r10</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -18,7 +18,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="NetCoreServer" Version="7.0.0" />
-    <PackageReference Include="InTheHand.BluetoothLE" Version="4.0.33" />
+    <PackageReference Include="InTheHand.BluetoothLE" Version="4.0.45" />
     <PackageReference Include="Google.Protobuf" Version="3.22.1" />
     <PackageReference Include="Grpc.Tools" Version="2.53.0">
       <IncludeAssets>build; buildtransitive</IncludeAssets>
